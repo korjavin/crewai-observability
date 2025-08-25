@@ -1,8 +1,11 @@
 [tool.poetry]
-name = "crewai-observability"
+name = "crewai_scheduling_assistant"
 version = "0.1.0"
 description = "An observable crewAI project for scheduling."
 authors = ["Jules <jules@example.com>"]
+packages = [
+    { include = "crewai_scheduling_assistant", from = "src" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"

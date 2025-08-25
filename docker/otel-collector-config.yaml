@@ -1,0 +1,45 @@
+# 1. Receivers: Defines how data gets into the Collector.
+receivers:
+  otlp:
+    protocols:
+      # OTLP over gRPC, typically used by SDKs for performance.
+      grpc:
+        endpoint: 0.0.0.0:4317
+      # OTLP over HTTP, useful for broader compatibility.
+      http:
+        endpoint: 0.0.0.0:4318
+
+# 2. Processors: Defines how data is processed within the Collector.
+processors:
+  # Batches telemetry data to reduce the number of export requests.
+  batch:
+    timeout: 1s
+    send_batch_size: 512
+
+# 3. Exporters: Defines where data is sent from the Collector.
+exporters:
+  # Exports traces to Jaeger via gRPC.
+  jaeger:
+    endpoint: jaeger:14250
+    tls:
+      insecure: true
+
+  # Exports metrics in a format that Prometheus can scrape.
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    namespace: crewai_assistant
+
+# 4. Service: Connects receivers, processors, and exporters into pipelines.
+service:
+  pipelines:
+    # Pipeline for trace data.
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [jaeger]
+
+    # Pipeline for metric data.
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus]
