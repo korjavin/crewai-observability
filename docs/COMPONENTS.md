@@ -3,16 +3,16 @@
 
 This document provides a detailed description of the core components of the AI Scheduling Assistant: the Agents, the Tasks they perform, and the Tools they use.
 
-## 1. Managed Connection Platform (MCP) Simulator
+## 1. The Role of the Model Context Protocol (MCP)
 
-Before defining the tools, it's important to understand how they connect to external services.
+In this architecture, we assume that agents needing to interact with external services (like Google) do so through the **Model Context Protocol (MCP)**. The tools listed below are the practical implementations that would be exposed via this protocol.
 
-### `src.mcp.connection_manager`
-This module abstracts away the complexity of Google API authentication. It will have a class, `ConnectionManager`, with methods to:
--   Load credentials from a standard location (e.g., `~/.config/gcp/credentials.json`).
--   Build and return authenticated `gmail` and `calendar` service objects.
+An agent's interaction looks like this:
+1.  The `crewai` agent determines a tool is needed (e.g., `read_emails`).
+2.  It invokes the tool, which is understood to be an MCP-compliant endpoint.
+3.  The tool function executes, handling its own authentication to the Google API and returning a standardized response to the agent.
 
-Tools will instantiate this manager to get a service object, rather than handling authentication themselves.
+This decouples the agent's logic from the tool's implementation. For this simulation, we will define these tools as standard Python functions, but the architecture presumes they operate under the MCP standard.
 
 ## 2. Tools
 

@@ -10,7 +10,7 @@ The final output should be a detailed architectural blueprint, explained in one 
 
 The system you design should be an AI-powered assistant capable of performing the following workflow:
 
-1.  **Read Emails**: The system must be able to read a user's emails from Google Mail. The connection to the Google service should be handled via a Managed Connection Platform (MCP).
+1.  **Read Emails**: The system must be able to read a user's emails from Google Mail. The connection to the Google service should be handled via the **Model Context Protocol (MCP)**, an open standard for AI-to-tool communication.
 
 2.  **Identify Potential Events**: It needs to analyze the content of the emails to find suggestions for calendar events. This includes identifying the event topic, other participants, and any other relevant details.
 
@@ -18,7 +18,7 @@ The system you design should be an AI-powered assistant capable of performing th
 
 4.  **Propose and Await Approval**: The system should present the proposed event and the suggested time slots to the user. It must then wait for the user to approve one of the suggestions. This human-in-the-loop step is a critical part of the workflow.
 
-5.  **Create Event**: If the user approves a time slot, the system must then create the event in their Google Calendar. This connection should also be handled via an MCP.
+5.  **Create Event**: If the user approves a time slot, the system must then create the event in their Google Calendar. This interaction should also be governed by the Model Context Protocol.
 
 ## Core Architectural Challenge: Deep Observability
 

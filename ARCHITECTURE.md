@@ -30,12 +30,13 @@ graph TD
         D --> E[Scheduling Assistant Agent];
     end
 
-    subgraph Tools & Services
-        C -- uses --> T1[Google Mail Tool];
-        E -- uses --> T2[Google Calendar Search Tool];
-        H -- uses --> T3[Google Calendar Create Tool];
-        T1 & T2 & T3 -- connect via --> MCP[MCP: Connection Manager];
-        MCP -- handles auth for --> GAPI[Google APIs];
+    subgraph "Tools (MCP-Compliant)"
+        C -- "interacts via MCP" --> T1[Google Mail Tool];
+        E -- "interacts via MCP" --> T2[Google Calendar Search Tool];
+        H -- "interacts via MCP" --> T3[Google Calendar Create Tool];
+        T1 -- uses --> GAPI[Google APIs];
+        T2 -- uses --> GAPI;
+        T3 -- uses --> GAPI;
     end
 
     subgraph Booking Crew
@@ -70,8 +71,64 @@ We leverage `crewai` for its structured approach to building agentic workflows. 
 1.  **Analysis Crew**: Scans emails and finds potential calendar slots.
 2.  **Booking Crew**: Takes an approved slot and creates the calendar event.
 
-### Managed Connection Platform (MCP)
-Instead of handling API credentials directly within our tools, we will simulate an MCP with a `ConnectionManager` class. This component is responsible for securely loading Google API credentials and creating service objects (`gmail_service`, `calendar_service`). This promotes security and separation of concerns, as the tools themselves don't need to know the details of authentication.
+### Model Context Protocol (MCP)
+A core concept in this architecture is the **Model Context Protocol (MCP)**, an open standard that governs how AI systems connect to external tools and data. Instead of agents calling Python functions directly in a non-standard way, they will interact with tools through this structured protocol.
+
+For this project, this means that when an agent needs to read an email or query a calendar, it's not just calling a simple function. It's interacting with a tool that is exposed via an MCP-compliant interface. This has several advantages:
+- **Standardization**: The way the agent requests an action (e.g., "read emails") and receives data is standardized.
+- **Security**: The protocol can enforce secure handling of credentials and context.
+- **Interoperability**: Any AI model that "speaks" MCP could, in theory, use the tools we define.
+
+### Observability with OpenTelemetry
+This is the cornerstone of the project's traceability goal. By configuring `crewai` with an OpenTelemetry exporter, we can capture detailed traces of the entire workflow. Each agent's execution, task completion, and tool usage will be recorded as a "span," allowing us to visualize:
+-   The total time taken for the crew to run.
+-   The performance of individual agents and tools.
+-   The inputs and outputs of each step.
+-   The full context passed between agents.
+
+We will use **Jaeger** as the backend to receive and visualize these traces locally.
+
+## 3. Project Structure
+
+The project will be organized as follows:
+
+```
+/crewai-observability
+|
+├── .env                  # Environment variables (API keys, OTel config)
+├── main.py               # Main script to configure and run the crews
+├── requirements.txt      # Python dependencies
+|
+├── /src
+|   ├── __init__.py
+|   ├── agents.py         # Definitions for all our CrewAI agents
+|   ├── tasks.py          # Definitions for all our CrewAI tasks
+|   └── tools/
+|       ├── __init__.py
+|       ├── google_calendar_tools.py # Tools for calendar search/creation
+|       └── google_mail_tools.py     # Tool for reading emails
+|
+└── /docs
+    ├── ARCHITECTURE.md   # This file
+    ├── COMPONENTS.md     # Detailed breakdown of agents, tasks, and tools
+    ├── OBSERVABILITY.md  # Guide to setting up and using the observability stack
+    └── WORKFLOW.md       # Explanation of the end-to-end user flow
+```
+
+## 2. Core Concepts
+
+### CrewAI
+We leverage `crewai` for its structured approach to building agentic workflows. It allows us to define specialized agents with distinct roles, tools, and tasks, which are then orchestrated by a `Crew`. This project will use two crews:
+1.  **Analysis Crew**: Scans emails and finds potential calendar slots.
+2.  **Booking Crew**: Takes an approved slot and creates the calendar event.
+
+### Model Context Protocol (MCP)
+A core concept in this architecture is the **Model Context Protocol (MCP)**, an open standard that governs how AI systems connect to external tools and data. Instead of agents calling Python functions directly in a non-standard way, they will interact with tools through this structured protocol.
+
+For this project, this means that when an agent needs to read an email or query a calendar, it's not just calling a simple function. It's interacting with a tool that is exposed via an MCP-compliant interface. This has several advantages:
+- **Standardization**: The way the agent requests an action (e.g., "read emails") and receives data is standardized.
+- **Security**: The protocol can enforce secure handling of credentials and context.
+- **Interoperability**: Any AI model that "speaks" MCP could, in theory, use the tools we define.
 
 ### Observability with OpenTelemetry
 This is the cornerstone of the project's traceability goal. By configuring `crewai` with an OpenTelemetry exporter, we can capture detailed traces of the entire workflow. Each agent's execution, task completion, and tool usage will be recorded as a "span," allowing us to visualize:
