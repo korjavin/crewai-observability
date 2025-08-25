@@ -1,0 +1,20 @@
+# docker-compose.yml Template
+version: "3.8"
+
+services:
+  my-app:
+    # The image tag will be replaced by the GitHub Actions workflow
+    image: ghcr.io/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME:latest
+    container_name: my-app
+    networks:
+      - my-network # Replace with your network name
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.my-app.rule=Host(`app.your-domain.com`)" # Replace with your domain
+      - "traefik.http.routers.my-app.entrypoints=websecure"
+      - "traefik.http.routers.my-app.tls.certresolver=myresolver"
+    restart: unless-stopped
+
+networks:
+  my-network: # Replace with your network name
+    external: true
