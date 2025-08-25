@@ -1,178 +1,65 @@
+# **I. System Architecture Overview**
 
-# Architecture: AI-Powered Scheduling Assistant with CrewAI
+This section establishes the high-level architectural design, defining the system's components, boundaries, and the technologies that underpin its functionality. The architecture is designed for modularity, scalability, and, most importantly, deep observability.
 
-This document outlines the architecture for a demonstration project showcasing `crewai` integrated with observability tools to create a practical AI-powered scheduling assistant.
+### **1.1. High-Level System Context**
 
-## 1. Overview
+The system operates as an intermediary between a user's Google Workspace account and an AI-driven decision-making engine. It is composed of five primary interacting components: the User, Google Workspace, the `crewai` Scheduling Assistant application, a Human-in-the-Loop (HITL) Interface, and the Observability Stack.
 
-The project aims to build a multi-agent system using `crewai` that can:
-1.  Read a user's emails via the Gmail API.
-2.  Identify and parse potential real-world events or meetings mentioned in the emails.
-3.  Check the user's Google Calendar for availability.
-4.  Propose suitable time slots for the identified events.
-5.  Wait for user approval.
-6.  Create the event in Google Calendar upon approval.
+The diagram below illustrates the relationships and primary data flows between these components. The `crewai` assistant is the central hub, pulling data from Google Mail, pushing data to Google Calendar, interacting with the user for confirmation, and continuously emitting telemetry data to the dedicated observability stack.
 
-A primary goal is to wrap this entire workflow in a robust **observability** layer using **OpenTelemetry**, allowing us to trace the execution flow from the initial email read to the final calendar event creation. This provides deep insights into agent performance, tool usage, and LLM interactions.
+C4Context
 
-### High-Level Diagram
+  title System Context Diagram for AI Scheduling Assistant
 
-```mermaid
-graph TD
-    subgraph User Interaction
-        A[User runs main.py] --> B{Crew Kick-off};
-        G[User Approves/Rejects Slot] --> H{Booking Crew};
-    end
+  Person(user, "User", "Provides email/calendar access and event confirmation.")
 
-    subgraph Analysis Crew
-        B --> C[Email Reader Agent];
-        C --> D[Event Analyst Agent];
-        D --> E[Scheduling Assistant Agent];
-    end
+  System_Ext(google, "Google Workspace", "Provides Gmail and Google Calendar APIs.")
 
-    subgraph "Tools (MCP-Compliant)"
-        C -- "interacts via MCP" --> T1[Google Mail Tool];
-        E -- "interacts via MCP" --> T2[Google Calendar Search Tool];
-        H -- "interacts via MCP" --> T3[Google Calendar Create Tool];
-        T1 -- uses --> GAPI[Google APIs];
-        T2 -- uses --> GAPI;
-        T3 -- uses --> GAPI;
-    end
+  System_Boundary(c1, "AI Scheduling System") {
 
-    subgraph Booking Crew
-        H --> I[Event Booker Agent];
-    end
+    System(app, "crewai Scheduling Assistant", "Core Python application with agentic logic.")
 
-    subgraph Observability Layer
-        B -- traces --> OTel;
-        C -- traces --> OTel;
-        D -- traces --> OTel;
-        E -- traces --> OTel;
-        H -- traces --> OTel;
-        I -- traces --> OTel;
-        T1 -- traces --> OTel;
-        T2 -- traces --> OTel;
-        T3 -- traces --> OTel;
-        OTel -- sends data to --> Jaeger[Jaeger UI];
-    end
+    System(hitl, "Human-in-the-Loop Interface", "CLI or simple UI for user approvals.")
 
-    E --> F[Structured Output: Proposed Slots];
-    F --> G;
-    I --> J[Final Status: Event Created];
+  }
 
-    style OTel fill:#f9f,stroke:#333,stroke-width:2px
-    style Jaeger fill:#f9f,stroke:#333,stroke-width:2px
-```
+  System_Boundary(c2, "Observability Stack") {
 
-## 2. Core Concepts
+    System(collector, "OpenTelemetry Collector", "Receives, processes, and routes telemetry.")
 
-### CrewAI
-We leverage `crewai` for its structured approach to building agentic workflows. It allows us to define specialized agents with distinct roles, tools, and tasks, which are then orchestrated by a `Crew`. This project will use two crews:
-1.  **Analysis Crew**: Scans emails and finds potential calendar slots.
-2.  **Booking Crew**: Takes an approved slot and creates the calendar event.
+    SystemDb(jaeger, "Jaeger", "Stores and visualizes distributed traces.")
 
-### Model Context Protocol (MCP)
-A core concept in this architecture is the **Model Context Protocol (MCP)**, an open standard that governs how AI systems connect to external tools and data. Instead of agents calling Python functions directly in a non-standard way, they will interact with tools through this structured protocol.
+    SystemDb(prometheus, "Prometheus", "Stores and queries time-series metrics.")
 
-For this project, this means that when an agent needs to read an email or query a calendar, it's not just calling a simple function. It's interacting with a tool that is exposed via an MCP-compliant interface. This has several advantages:
-- **Standardization**: The way the agent requests an action (e.g., "read emails") and receives data is standardized.
-- **Security**: The protocol can enforce secure handling of credentials and context.
-- **Interoperability**: Any AI model that "speaks" MCP could, in theory, use the tools we define.
+  }
 
-### Observability with OpenTelemetry
-This is the cornerstone of the project's traceability goal. By configuring `crewai` with an OpenTelemetry exporter, we can capture detailed traces of the entire workflow. Each agent's execution, task completion, and tool usage will be recorded as a "span," allowing us to visualize:
--   The total time taken for the crew to run.
--   The performance of individual agents and tools.
--   The inputs and outputs of each step.
--   The full context passed between agents.
+  Rel(user, google, "Authenticates with")
 
-We will use **Jaeger** as the backend to receive and visualize these traces locally.
+  Rel(user, hitl, "Approves/Rejects proposals via")
 
-## 3. Project Structure
+  Rel(app, google, "Reads emails and manages calendar via APIs")
 
-The project will be organized as follows:
+  Rel(app, hitl, "Presents proposals to")
 
-```
-/crewai-observability
-|
-├── .env                  # Environment variables (API keys, OTel config)
-├── main.py               # Main script to configure and run the crews
-├── requirements.txt      # Python dependencies
-|
-├── /src
-|   ├── __init__.py
-|   ├── agents.py         # Definitions for all our CrewAI agents
-|   ├── tasks.py          # Definitions for all our CrewAI tasks
-|   └── tools/
-|       ├── __init__.py
-|       ├── google_calendar_tools.py # Tools for calendar search/creation
-|       └── google_mail_tools.py     # Tool for reading emails
-|
-└── /docs
-    ├── ARCHITECTURE.md   # This file
-    ├── COMPONENTS.md     # Detailed breakdown of agents, tasks, and tools
-    ├── OBSERVABILITY.md  # Guide to setting up and using the observability stack
-    └── WORKFLOW.md       # Explanation of the end-to-end user flow
-```
+  Rel(app, collector, "Emits traces and metrics to", "OTLP")
 
-## 2. Core Concepts
+  Rel(collector, jaeger, "Exports traces to")
 
-### CrewAI
-We leverage `crewai` for its structured approach to building agentic workflows. It allows us to define specialized agents with distinct roles, tools, and tasks, which are then orchestrated by a `Crew`. This project will use two crews:
-1.  **Analysis Crew**: Scans emails and finds potential calendar slots.
-2.  **Booking Crew**: Takes an approved slot and creates the calendar event.
+  Rel(collector, prometheus, "Exports metrics to")
 
-### Model Context Protocol (MCP)
-A core concept in this architecture is the **Model Context Protocol (MCP)**, an open standard that governs how AI systems connect to external tools and data. Instead of agents calling Python functions directly in a non-standard way, they will interact with tools through this structured protocol.
+  UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="2")
 
-For this project, this means that when an agent needs to read an email or query a calendar, it's not just calling a simple function. It's interacting with a tool that is exposed via an MCP-compliant interface. This has several advantages:
-- **Standardization**: The way the agent requests an action (e.g., "read emails") and receives data is standardized.
-- **Security**: The protocol can enforce secure handling of credentials and context.
-- **Interoperability**: Any AI model that "speaks" MCP could, in theory, use the tools we define.
+### **1.2. Core Technology Stack**
 
-### Observability with OpenTelemetry
-This is the cornerstone of the project's traceability goal. By configuring `crewai` with an OpenTelemetry exporter, we can capture detailed traces of the entire workflow. Each agent's execution, task completion, and tool usage will be recorded as a "span," allowing us to visualize:
--   The total time taken for the crew to run.
--   The performance of individual agents and tools.
--   The inputs and outputs of each step.
--   The full context passed between agents.
+The selection of technologies is driven by the project's dual requirements: building a functional AI agent system and establishing a comprehensive, open-source observability framework. Each component is chosen for its maturity, community support, and alignment with modern cloud-native and AI development practices.
 
-We will use **Jaeger** as the backend to receive and visualize these traces locally.
+* **Application Framework**: `crewai`. This modern, Python-native framework is selected for its standalone nature (independent of other agent frameworks like LangChain), its focus on role-based autonomous agents, and its support for both autonomous `Crews` and structured `Flows`. Its lean design and growing ecosystem make it an ideal choice for this project.  
+* **External Service APIs**: Google Mail API & Google Calendar API. These are the necessary interfaces to fulfill the application's core functional requirements of reading emails and managing calendar events.  
+* **Observability Instrumentation**: OpenLLMetry. This library is a critical choice as it is an extension of OpenTelemetry specifically designed for LLM applications. It provides out-of-the-box instrumentation for `crewai`, LLM providers, and vector databases, capturing rich, application-specific context such as prompts, completions, and token counts automatically. This directly addresses the core requirement for deep LLM traceability.  
+* **Telemetry Pipeline**: OpenTelemetry Collector. The Collector is a vendor-neutral proxy that receives, processes, and exports telemetry data. Its use is a strategic architectural decision that decouples the application from the specific observability backends, allowing for flexible routing and processing of traces, metrics, and logs.  
+* **Distributed Tracing Backend**: Jaeger. A popular and powerful open-source distributed tracing system. Its user interface is highly effective for visualizing the complex, nested interactions of a multi-agent system, making it possible to trace a single request from email ingestion through agent collaboration to final event creation.  
+* **Metrics & Monitoring Backend**: Prometheus & Grafana. Prometheus is the de-facto industry standard for open-source metrics storage and querying, while Grafana is the leading tool for building rich, interactive dashboards from that data. This combination will provide at-a-glance insights into system performance, LLM costs, and operational health.  
+* **Containerization**: Docker & Docker Compose. The entire system, including the application and the multi-component observability stack, will be defined and managed via Docker Compose. This ensures a consistent, reproducible, and portable development environment that can be spun up with a single command.
 
-## 3. Project Structure
-
-The project will be organized as follows:
-
-```
-/crewai-observability
-|
-├── .env                  # Environment variables (API keys, OTel config)
-├── main.py               # Main script to configure and run the crews
-├── requirements.txt      # Python dependencies
-|
-├── /src
-|   ├── __init__.py
-|   ├── agents.py         # Definitions for all our CrewAI agents
-|   ├── tasks.py          # Definitions for all our CrewAI tasks
-|   ├── tools/
-|   |   ├── __init__.py
-|   |   ├── google_calendar_tools.py # Tools for calendar search/creation
-|   |   └── google_mail_tools.py     # Tool for reading emails
-|   |
-|   └── mcp/
-|       ├── __init__.py
-|       └── connection_manager.py # Simulated MCP for Google API connections
-|
-└── /docs
-    ├── ARCHITECTURE.md   # This file
-    ├── COMPONENTS.md     # Detailed breakdown of agents, tasks, and tools
-    ├── OBSERVABILITY.md  # Guide to setting up and using the observability stack
-    └── WORKFLOW.md       # Explanation of the end-to-end user flow
-```
-
-## 4. Next Steps
-
-The following documents provide more detail on each part of the architecture:
--   **[COMPONENTS.md](./docs/COMPONENTS.md)**: A deep dive into the agents, tasks, and tools.
--   **[OBSERVABILITY.md](./docs/OBSERVABILITY.md)**: How to set up and interpret the observability stack.
--   **[WORKFLOW.md](./docs/WORKFLOW.md)**: A step-by-step description of the process flow, including the human-in-the-loop approval.
+For more details, please refer to the documents in the `docs/` directory.
