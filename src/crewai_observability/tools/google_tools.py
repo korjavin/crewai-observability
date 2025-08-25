@@ -1,4 +1,5 @@
-from crewai_tools import BaseTool
+from crewai_tools import BaseTool, tool
+
 from googleapiclient.discovery import build
 from src.crewai_observability.auth import get_google_credentials
 
@@ -81,3 +82,23 @@ class GoogleCalendarWriterTool(BaseTool):
         event = service.events().insert(calendarId='primary', body=event_details).execute()
 
         return f"Event created successfully. Event ID: {event.get('id')}"
+
+@tool("Human Approval Tool")
+def human_approval_tool(proposed_slots: list) -> str:
+    """
+    Presents a list of proposed time slots to the user and waits for their
+    selection. This is the human-in-the-loop interface.
+    """
+    print("Please review the following proposed meeting times:")
+    for i, slot in enumerate(proposed_slots):
+        print(f"{i+1}. {slot}")
+    while True:
+        try:
+            selection = int(input("Enter the number of your chosen time slot: "))
+            if 1 <= selection <= len(proposed_slots):
+                return proposed_slots[selection - 1]
+            else:
+                print("Invalid selection. Please try again.")
+        except ValueError:
+            print("Please enter a valid number.")
+
