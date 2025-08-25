@@ -5,6 +5,8 @@
 
 Create integration tests for the `SchedulingCrew` workflow.
 
+**Note:** If you are facing dependency issues with `crewai-tools`, please refer to `task15_remediation.md` for guidance.
+
 **Requirements:**
 
 1.  Create a file named `tests/integration/test_crew.py`.

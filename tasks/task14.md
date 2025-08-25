@@ -3,7 +3,9 @@
 
 **Description:**
 
-Create unit tests for the agents defined in `src/crewai_observability/crew.py`.
+Create unit tests for the agents defined in `src.crewai_observability/crew.py`.
+
+**Note:** If you are having trouble with `AssertionError` when testing the agent initialization, please refer to `task14_remediation.md` for guidance.
 
 **Requirements:**
 
