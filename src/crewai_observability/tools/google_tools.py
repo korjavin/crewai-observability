@@ -1,24 +1,40 @@
-from crewai_tools import BaseTool, tool
-
+import base64
+from typing import Type
+from pydantic import BaseModel, Field
+from crewai.tools import BaseTool, tool
 from googleapiclient.discovery import build
-from src.crewai_observability.auth import get_google_credentials
+from crewai_observability.auth import get_google_credentials
 
+# --- Input Schemas ---
+class GmailReaderInput(BaseModel):
+    """Input for GmailReaderTool."""
+    query: str = Field(..., description="The search query for Gmail.")
+
+class GoogleCalendarSearchInput(BaseModel):
+    """Input for GoogleCalendarSearchTool."""
+    start_time: str = Field(..., description="Start time for the search window in ISO 8601 format.")
+    end_time: str = Field(..., description="End time for the search window in ISO 8601 format.")
+
+class GoogleCalendarWriterInput(BaseModel):
+    """Input for GoogleCalendarWriterTool."""
+    event_details: dict = Field(..., description="A dictionary containing the event details.")
+
+# --- Tools ---
 class GmailReaderTool(BaseTool):
     name: str = "Gmail Reader Tool"
     description: str = "Reads and searches for emails in a user's Gmail inbox."
+    args_schema: Type[BaseModel] = GmailReaderInput
 
     def _run(self, query: str) -> str:
         creds = get_google_credentials()
         service = build('gmail', 'v1', credentials=creds)
 
-        # Search for messages matching the query
         result = service.users().messages().list(userId='me', q=query).execute()
         messages = result.get('messages', [])
 
         if not messages:
             return "No messages found."
 
-        # Fetch and combine the content of the messages
         email_content = []
         for msg in messages:
             txt = service.users().messages().get(userId='me', id=msg['id']).execute()
@@ -30,16 +46,13 @@ class GmailReaderTool(BaseTool):
                 parts = payload.get('parts', [])
                 body = ""
                 if parts:
-                    # Find the plain text part
                     part = next((p for p in parts if p['mimeType'] == 'text/plain'), None)
                     if part:
-                        import base64
                         data = part['body']['data']
                         body = base64.urlsafe_b64decode(data).decode('utf-8')
 
                 email_content.append(f"Subject: {subject}\nBody: {body}\n---")
             except (KeyError, StopIteration):
-                # Handle cases where email format is unexpected
                 email_content.append(f"Could not parse email with ID: {msg['id']}\n---")
 
         return "\n".join(email_content)
@@ -47,6 +60,7 @@ class GmailReaderTool(BaseTool):
 class GoogleCalendarSearchTool(BaseTool):
     name: str = "Google Calendar Search Tool"
     description: str = "Finds available time slots in a user's Google Calendar."
+    args_schema: Type[BaseModel] = GoogleCalendarSearchInput
 
     def _run(self, start_time: str, end_time: str) -> str:
         creds = get_google_credentials()
@@ -66,14 +80,13 @@ class GoogleCalendarSearchTool(BaseTool):
         if not busy_times:
             return f"The calendar is completely free between {start_time} and {end_time}."
 
-        # For simplicity, this tool will just return the busy times.
-        # A more advanced implementation would calculate the free slots.
         busy_slots_str = "\n".join([f"- From {slot['start']} to {slot['end']}" for slot in busy_times])
         return f"The following time slots are busy:\n{busy_slots_str}"
 
 class GoogleCalendarWriterTool(BaseTool):
     name: str = "Google Calendar Writer Tool"
     description: str = "Creates a new event in the user's Google Calendar."
+    args_schema: Type[BaseModel] = GoogleCalendarWriterInput
 
     def _run(self, event_details: dict) -> str:
         creds = get_google_credentials()
@@ -101,4 +114,3 @@ def human_approval_tool(proposed_slots: list) -> str:
                 print("Invalid selection. Please try again.")
         except ValueError:
             print("Please enter a valid number.")
-
