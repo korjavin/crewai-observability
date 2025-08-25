@@ -8,9 +8,9 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.10"
-crewai = "*"
-crewai_tools = "*"
+python = ">=3.10, <=3.13"
+crewai = "0.28.8"
+crewai_tools = "0.1.6"
 python-dotenv = "*"
 google-api-python-client = "*"
 google-auth-httplib2 = "*"
@@ -19,6 +19,7 @@ traceloop-sdk = "*"
 opentelemetry-instrumentation-crewai = "*"
 pytest = "^8.2.2"
 pytest-mock = "^3.14.0"
+setuptools = "*"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"

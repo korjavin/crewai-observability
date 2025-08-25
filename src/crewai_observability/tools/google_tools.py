@@ -1,7 +1,7 @@
-from crewai.tools import tool
+from crewai_tools import tool
 
 from googleapiclient.discovery import build
-from src.crewai_observability.auth import get_google_credentials
+from ..auth import get_google_credentials
 
 @tool("Gmail Reader Tool")
 def gmail_reader_tool(query: str) -> str:
