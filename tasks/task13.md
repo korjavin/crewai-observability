@@ -3,7 +3,9 @@
 
 **Description:**
 
-Create unit tests for the custom tools in `src/crewai_observability/tools/google_tools.py`.
+Create unit tests for the custom tools in `src.crewai_observability/tools/google_tools.py`.
+
+**Note:** If you are having trouble mocking the Google API calls, please refer to `task13_remediation.md` for guidance.
 
 **Requirements:**
 
