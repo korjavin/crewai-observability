@@ -56,7 +56,7 @@ This application requires Google API credentials to access your Gmail and Google
 2.  **Run the application:**
     Execute the main application script from the root of the project:
     ```bash
-    python src/project_name/main.py
+    python main.py
     ```
     On the first run, you will be prompted to authenticate with your Google account in your web browser. After granting permissions, a `token.json` file will be created, and subsequent runs will be non-interactive.
 
