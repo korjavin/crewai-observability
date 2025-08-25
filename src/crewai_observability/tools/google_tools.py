@@ -1,4 +1,5 @@
 from crewai_tools import BaseTool, tool
+
 from googleapiclient.discovery import build
 from src.crewai_observability.auth import get_google_credentials
 
@@ -100,3 +101,4 @@ def human_approval_tool(proposed_slots: list) -> str:
                 print("Invalid selection. Please try again.")
         except ValueError:
             print("Please enter a valid number.")
+
