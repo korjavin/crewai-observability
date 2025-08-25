@@ -1,0 +1,41 @@
+scan_inbox_task:
+  agent: email_triage_agent
+  description: |
+    Scan the last 24 hours of emails in the Gmail inbox. Identify and extract the
+    full content of any email that contains a clear intent to schedule a meeting.
+    Focus on phrases like "let's meet," "can you find a time," or "schedule a call."
+  expected_output: |
+    A JSON object containing a list of potential meeting requests. Each item in the list
+    should have the 'thread_id' and 'body' of the email. Return up to 5 potential emails.
+    If no emails are found, return an empty list.
+find_slots_task:
+  agent: scheduling_agent
+  description: |
+    From the provided email text, extract the meeting topic, attendees' email addresses,
+    and the requested duration. If duration is not specified, assume 30 minutes.
+    Query the Google Calendar to find three available slots in the next 5 business days
+    that work for the user.
+  expected_output: |
+    A structured list of three proposed time slots in ISO 8601 format, along with the
+    extracted meeting topic and attendee list. For example:
+    {
+      "topic": "Project Phoenix Sync",
+      "attendees": ["user@example.com", "colleague@example.com"],
+      "slots": ["..."]
+    }
+confirm_time_task:
+  agent: confirmation_agent
+  description: |
+    Present the proposed time slots clearly to the user for approval. The user will
+    select one of the options. Wait for their selection and capture it accurately.
+  expected_output: |
+    The single, user-confirmed time slot in ISO 8601 format, returned as a string.
+create_event_task:
+  agent: booking_agent
+  description: |
+    Using the confirmed time slot, meeting topic, and attendee list, create a new event
+    in the Google Calendar. Ensure the event title is the meeting topic and all attendees
+    are invited.
+  expected_output: |
+    A confirmation string containing the Google Calendar event ID and a link to the event.
+    For example: "Event created successfully. Event ID: abc123xyz789".
