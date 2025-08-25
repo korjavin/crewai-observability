@@ -1,0 +1,15 @@
+# Environment variables
+.env
+
+# Google credentials
+config/token.txt
+
+# Python virtual environment
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# IDE
+.idea/
+.vscode/
