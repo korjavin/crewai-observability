@@ -4,6 +4,46 @@ This project is an AI-powered scheduling assistant that automates the process of
 
 The core of the project is a `crewai` application that leverages Google Mail and Google Calendar APIs. The system is designed with a strong focus on observability, using OpenTelemetry to provide deep insights into the agent's behavior and performance. The entire application and its observability stack (Jaeger, Prometheus, Grafana) are containerized with Docker for easy and reproducible deployment.
 
+## How it Works
+
+The AI is powered by a team of autonomous agents, each with a specific role, working together to handle scheduling requests. The workflow is sequential, with each agent handing off its work to the next in the process.
+
+### The Agents
+
+1.  **Inbox Analyst (`email_triage_agent`)**:
+    -   **Goal**: Meticulously scans incoming emails to identify actionable meeting requests.
+    -   **Tools**: `gmail_reader_tool`
+    -   **Backstory**: An expert in natural language understanding, trained to distinguish between casual mentions of meetings and concrete scheduling requests.
+
+2.  **Calendar Coordination Specialist (`scheduling_agent`)**:
+    -   **Goal**: Analyzes meeting requirements and finds optimal, conflict-free time slots in the user's calendar.
+    -   **Tools**: `google_calendar_search_tool`
+    -   **Backstory**: A master of temporal logistics with deep knowledge of the Google Calendar API.
+
+3.  **User Interaction Liaison (`confirmation_agent`)**:
+    -   **Goal**: Clearly presents proposed meeting times to the user and accurately captures their final decision.
+    -   **Tools**: `human_approval_tool`
+    -   **Backstory**: A communications expert focused on making the human-in-the-loop step seamless and efficient.
+
+4.  **Event Logistics Executor (`booking_agent`)**:
+    -   **Goal**: Creates precise calendar events based on confirmed details.
+    -   **Tools**: `google_calendar_writer_tool`
+    -   **Backstory**: A detail-oriented professional who ensures all event details are perfect and all attendees are invited.
+
+### The Tasks
+
+1.  **Scan Inbox (`scan_inbox_task`)**:
+    -   The `Inbox Analyst` scans the last 24 hours of emails to find potential meeting requests.
+
+2.  **Find Available Slots (`find_slots_task`)**:
+    -   The `Calendar Coordination Specialist` extracts meeting details from the email and queries Google Calendar to find three suitable time slots.
+
+3.  **Confirm Time with User (`confirm_time_task`)**:
+    -   The `User Interaction Liaison` presents the proposed slots to the user for their approval.
+
+4.  **Create Calendar Event (`create_event_task`)**:
+    -   The `Event Logistics Executor` takes the user-confirmed time and creates the event in Google Calendar, inviting all attendees.
+
 ## Installation
 
 1.  **Clone the repository:**
@@ -13,9 +53,9 @@ The core of the project is a `crewai` application that leverages Google Mail and
     ```
 
 2.  **Install project dependencies:**
-    This project uses `crewai`'s built-in tools to manage dependencies. Run the following command to create a virtual environment and install all necessary packages from `pyproject.toml`:
+    This project uses Poetry to manage dependencies. Run the following command to create a virtual environment and install all necessary packages from `pyproject.toml`:
     ```bash
-    crewai install
+    poetry install
     ```
 
 ## Google API Credentials Setup
