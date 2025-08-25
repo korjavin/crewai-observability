@@ -1,5 +1,4 @@
 scan_inbox_task:
-  agent: email_triage_agent
   description: |
     Scan the last 24 hours of emails in the Gmail inbox. Identify and extract the
     full content of any email that contains a clear intent to schedule a meeting.
@@ -9,7 +8,6 @@ scan_inbox_task:
     should have the 'thread_id' and 'body' of the email. Return up to 5 potential emails.
     If no emails are found, return an empty list.
 find_slots_task:
-  agent: scheduling_agent
   description: |
     From the provided email text, extract the meeting topic, attendees' email addresses,
     and the requested duration. If duration is not specified, assume 30 minutes.

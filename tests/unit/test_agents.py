@@ -1,11 +1,21 @@
 import pytest
+from unittest.mock import patch
 from crewai_observability.crew import SchedulingCrew
 from crewai import Agent
 
+from unittest.mock import MagicMock
+
+from langchain_core.runnables import Runnable
+
 @pytest.fixture
 def crew():
-    """Fixture to initialize SchedulingCrew."""
-    return SchedulingCrew()
+    """Fixture to initialize the SchedulingCrew with a mocked LLM."""
+    with patch('crewai.agent.ChatOpenAI') as mock_chat_openai:
+        mock_llm = MagicMock()
+        mock_runnable = MagicMock(spec=Runnable)
+        mock_llm.bind.return_value = mock_runnable
+        mock_chat_openai.return_value = mock_llm
+        yield SchedulingCrew()
 
 def test_email_triage_agent_properties(crew):
     """Test the properties of the created email_triage_agent."""

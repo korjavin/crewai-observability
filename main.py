@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from traceloop.sdk import Traceloop
-from src.crewai_observability.crew import SchedulingCrew
+from crewai_observability.crew import SchedulingCrew
 
 def main():
     """

@@ -48,19 +48,31 @@ class SchedulingCrew:
 
     @task
     def scan_inbox_task(self) -> Task:
-        return Task(config=self.tasks_config['scan_inbox_task'])
+        return Task(
+            config=self.tasks_config['scan_inbox_task'],
+            agent=self.email_triage_agent()
+        )
 
     @task
     def find_slots_task(self) -> Task:
-        return Task(config=self.tasks_config['find_slots_task'])
+        return Task(
+            config=self.tasks_config['find_slots_task'],
+            agent=self.scheduling_agent()
+        )
 
     @task
     def confirm_time_task(self) -> Task:
-        return Task(config=self.tasks_config['confirm_time_task'])
+        return Task(
+            config=self.tasks_config['confirm_time_task'],
+            agent=self.confirmation_agent()
+        )
 
     @task
     def create_event_task(self) -> Task:
-        return Task(config=self.tasks_config['create_event_task'])
+        return Task(
+            config=self.tasks_config['create_event_task'],
+            agent=self.booking_agent()
+        )
 
     @crew
     def crew(self) -> Crew:
