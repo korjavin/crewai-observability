@@ -69,5 +69,5 @@ class SchedulingCrew:
             agents=self.agents,
             tasks=self.tasks,
             process=Process.sequential,
-            verbose=2
+            verbose=True
         )
