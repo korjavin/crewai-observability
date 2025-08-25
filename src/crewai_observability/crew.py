@@ -2,29 +2,23 @@ from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
 from .tools.google_tools import (
-    GmailReaderTool,
-    GoogleCalendarSearchTool,
-    GoogleCalendarWriterTool,
+    gmail_reader_tool,
+    google_calendar_search_tool,
+    google_calendar_writer_tool,
     human_approval_tool
 )
 
 @CrewBase
 class SchedulingCrew:
     """SchedulingCrew for managing email-to-event workflow."""
-    agents_config = 'config/agents.yaml'
-    tasks_config = 'config/tasks.yaml'
-
-    # NOTE: In a real implementation, the 'creds' object from the OAuth flow
-    # would need to be passed to these tool initializations.
-    # gmail_tool = GmailReaderTool()
-    # calendar_search_tool = GoogleCalendarSearchTool()
-    # calendar_write_tool = GoogleCalendarWriterTool()
+    agents_config = '../../config/agents.yaml'
+    tasks_config = '../../config/tasks.yaml'
 
     @agent
     def email_triage_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['email_triage_agent'],
-            # tools=[self.gmail_tool],
+            tools=[gmail_reader_tool],
             verbose=True
         )
 
@@ -32,7 +26,7 @@ class SchedulingCrew:
     def scheduling_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['scheduling_agent'],
-            # tools=[self.calendar_search_tool],
+            tools=[google_calendar_search_tool],
             verbose=True
         )
 
@@ -40,7 +34,7 @@ class SchedulingCrew:
     def confirmation_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['confirmation_agent'],
-            # tools=[human_approval_tool],
+            tools=[human_approval_tool],
             verbose=True
         )
 
@@ -48,7 +42,7 @@ class SchedulingCrew:
     def booking_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['booking_agent'],
-            tools=[self.calendar_write_tool],
+            tools=[google_calendar_writer_tool],
             verbose=True
         )
 

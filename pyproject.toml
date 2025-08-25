@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "An observable crewAI project for scheduling."
 authors = ["Jules <jules@example.com>"]
 packages = [
-    { include = "crewai_scheduling_assistant", from = "src" }
+    { include = "crewai_observability", from = "src" }
 ]
 
 [tool.poetry.dependencies]
@@ -17,6 +17,8 @@ google-auth-httplib2 = "*"
 google-auth-oauthlib = "*"
 traceloop-sdk = "*"
 opentelemetry-instrumentation-crewai = "*"
+pytest = "^8.2.2"
+pytest-mock = "^3.14.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
