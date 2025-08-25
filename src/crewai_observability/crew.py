@@ -1,14 +1,12 @@
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
-# The task description mentions that the tools are not yet implemented,
-# so I will comment out the imports and their usage for now.
-# from .tools.google_tools import (
-#     GmailReaderTool,
-#     GoogleCalendarSearchTool,
-#     GoogleCalendarWriterTool,
-#     human_approval_tool
-# )
+from .tools.google_tools import (
+    GmailReaderTool,
+    GoogleCalendarSearchTool,
+    GoogleCalendarWriterTool,
+    human_approval_tool
+)
 
 @CrewBase
 class SchedulingCrew:
@@ -50,7 +48,7 @@ class SchedulingCrew:
     def booking_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['booking_agent'],
-            # tools=[self.calendar_write_tool],
+            tools=[self.calendar_write_tool],
             verbose=True
         )
 
