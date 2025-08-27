@@ -5,73 +5,75 @@ from .tools.google_tools import (
     gmail_reader_tool,
     google_calendar_search_tool,
     google_calendar_writer_tool,
-    human_approval_tool
+    human_approval_tool,
 )
+
 
 @CrewBase
 class SchedulingCrew:
     """SchedulingCrew for managing email-to-event workflow."""
-    agents_config = '../../config/agents.yaml'
-    tasks_config = '../../config/tasks.yaml'
+
+    agents_config = "../../config/agents.yaml"
+    tasks_config = "../../config/tasks.yaml"
 
     @agent
     def email_triage_agent(self) -> Agent:
         return Agent(
-            config=self.agents_config['email_triage_agent'],
+            config=self.agents_config["email_triage_agent"],
             tools=[gmail_reader_tool],
-            verbose=True
+            verbose=True,
         )
 
     @agent
     def scheduling_agent(self) -> Agent:
         return Agent(
-            config=self.agents_config['scheduling_agent'],
+            config=self.agents_config["scheduling_agent"],
             tools=[google_calendar_search_tool],
-            verbose=True
+            verbose=True,
         )
 
     @agent
     def confirmation_agent(self) -> Agent:
         return Agent(
-            config=self.agents_config['confirmation_agent'],
+            config=self.agents_config["confirmation_agent"],
             tools=[human_approval_tool],
-            verbose=True
+            verbose=True,
         )
 
     @agent
     def booking_agent(self) -> Agent:
         return Agent(
-            config=self.agents_config['booking_agent'],
+            config=self.agents_config["booking_agent"],
             tools=[google_calendar_writer_tool],
-            verbose=True
+            verbose=True,
         )
 
     @task
     def scan_inbox_task(self) -> Task:
         return Task(
-            config=self.tasks_config['scan_inbox_task'],
-            agent=self.email_triage_agent()
+            config=self.tasks_config["scan_inbox_task"],
+            agent=self.email_triage_agent(),
         )
 
     @task
     def find_slots_task(self) -> Task:
         return Task(
-            config=self.tasks_config['find_slots_task'],
-            agent=self.scheduling_agent()
+            config=self.tasks_config["find_slots_task"],
+            agent=self.scheduling_agent(),
         )
 
     @task
     def confirm_time_task(self) -> Task:
         return Task(
-            config=self.tasks_config['confirm_time_task'],
-            agent=self.confirmation_agent()
+            config=self.tasks_config["confirm_time_task"],
+            agent=self.confirmation_agent(),
         )
 
     @task
     def create_event_task(self) -> Task:
         return Task(
-            config=self.tasks_config['create_event_task'],
-            agent=self.booking_agent()
+            config=self.tasks_config["create_event_task"],
+            agent=self.booking_agent(),
         )
 
     @crew
@@ -81,5 +83,5 @@ class SchedulingCrew:
             agents=self.agents,
             tasks=self.tasks,
             process=Process.sequential,
-            verbose=True
+            verbose=True,
         )

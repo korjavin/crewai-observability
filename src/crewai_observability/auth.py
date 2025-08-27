@@ -8,6 +8,7 @@ SCOPES = [
     'https://www.googleapis.com/auth/calendar'
 ]
 
+
 def get_google_credentials():
     """Handles the OAuth 2.0 flow and returns valid credentials."""
     creds = None

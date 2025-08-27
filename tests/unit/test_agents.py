@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 
 from langchain_core.runnables import Runnable
 
+
 @pytest.fixture
 def crew():
     """Fixture to initialize the SchedulingCrew with a mocked LLM."""
@@ -16,6 +17,7 @@ def crew():
         mock_llm.bind.return_value = mock_runnable
         mock_chat_openai.return_value = mock_llm
         yield SchedulingCrew()
+
 
 def test_email_triage_agent_properties(crew):
     """Test the properties of the created email_triage_agent."""
@@ -29,6 +31,7 @@ def test_email_triage_agent_properties(crew):
     assert len(agent.tools) == 1
     assert agent.verbose is True
 
+
 def test_scheduling_agent_properties(crew):
     """Test the properties of the created scheduling_agent."""
     agent = crew.scheduling_agent()
@@ -41,6 +44,7 @@ def test_scheduling_agent_properties(crew):
     assert len(agent.tools) == 1
     assert agent.verbose is True
 
+
 def test_confirmation_agent_properties(crew):
     """Test the properties of the created confirmation_agent."""
     agent = crew.confirmation_agent()
@@ -52,6 +56,7 @@ def test_confirmation_agent_properties(crew):
     assert agent.backstory == expected_config['backstory']
     assert len(agent.tools) == 1
     assert agent.verbose is True
+
 
 def test_booking_agent_properties(crew):
     """Test the properties of the created booking_agent."""
