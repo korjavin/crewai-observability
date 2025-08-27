@@ -23,6 +23,9 @@ pytest-mock = "^3.14.0"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
 pytest-mock = "^3.14.0"
+black = "^24.4.2"
+flake8 = "^7.0.0"
+safety = "^3.0.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
