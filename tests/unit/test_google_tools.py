@@ -53,7 +53,7 @@ def test_gmail_reader_tool_no_messages(monkeypatch):
     result = gmail_reader_tool.run(query="is:unread")
 
     # Assert
-    assert result == "No messages found."
+    assert result == "No messages."
 
 
 def test_google_calendar_search_tool_with_busy_slots(monkeypatch):
