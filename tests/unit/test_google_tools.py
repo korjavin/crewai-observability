@@ -72,12 +72,15 @@ def test_google_calendar_search_tool_with_busy_slots(monkeypatch):
 
     # Act
     result = google_calendar_search_tool.run(
-        start_time="2024-09-01T09:00:00Z", end_time="2024-09-01T17:00:00Z"
+        start_time="2024-09-01T09:00:00Z",
+        end_time="2024-09-01T17:00:00Z",
     )
 
     # Assert
     assert "The following time slots are busy:" in result
-    assert "- From 2024-09-01T10:00:00Z to 2024-09-01T11:00:00Z" in result
+    assert (
+        "- From 2024-09-01T10:00:00Z to 2024-09-01T11:00:00Z" in result
+    )
 
 
 def test_google_calendar_search_tool_with_no_busy_slots(monkeypatch):
@@ -100,8 +103,8 @@ def test_google_calendar_search_tool_with_no_busy_slots(monkeypatch):
 
     # Assert
     assert (
-        f"The calendar is completely free between {start_time} and {end_time}."
-        in result
+        f"The calendar is completely free between {start_time} "
+        f"and {end_time}." in result
     )
 
 
