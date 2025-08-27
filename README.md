@@ -1,5 +1,8 @@
 # AI-Powered Scheduling Assistant
 
+[![Main CI Pipeline](https://github.com/jules-example/crewai-scheduling-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/jules-example/crewai-scheduling-assistant/actions/workflows/ci.yml)
+[![Security Pipeline](https://github.com/jules-example/crewai-scheduling-assistant/actions/workflows/security.yml/badge.svg)](https://github.com/jules-example/crewai-scheduling-assistant/actions/workflows/security.yml)
+
 This project is an AI-powered scheduling assistant that automates the process of scheduling meetings from email requests. It uses a `crewai`-based multi-agent system to read emails, identify scheduling requests, find available time slots in a user's calendar, and create calendar events after receiving user approval.
 
 The core of the project is a `crewai` application that leverages Google Mail and Google Calendar APIs. The system is designed with a strong focus on observability, using OpenTelemetry to provide deep insights into the agent's behavior and performance. The entire application and its observability stack (Jaeger, Prometheus, Grafana) are containerized with Docker for easy and reproducible deployment.
